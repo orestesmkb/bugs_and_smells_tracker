@@ -18,6 +18,30 @@ try:
     # Create a cursor to perform database operations
     cursor = connection.cursor()
 
+    # Check if smells column already exists
+    postgreSQL_exist_Query = "SELECT EXISTS (SELECT 1 FROM information_schema.columns " \
+                             "WHERE table_name='class' AND column_name='smells')"
+    cursor.execute(postgreSQL_exist_Query)
+    exists_smells_column = cursor.fetchone()
+
+    # Add smells result column if it does not exist
+    if not exists_smells_column[0]:
+        postgreSQL_alter_Query = "ALTER TABLE public.class ADD COLUMN smells jsonb"
+        cursor.execute(postgreSQL_alter_Query)
+        connection.commit()
+
+    # Check if bug column already exists
+    postgreSQL_exist_Query = "SELECT EXISTS (SELECT 1 FROM information_schema.columns " \
+                             "WHERE table_name='class' AND column_name='bug')"
+    cursor.execute(postgreSQL_exist_Query)
+    exists_bug_column = cursor.fetchone()
+
+    # Add smells result column if it does not exist
+    if not exists_bug_column[0]:
+        postgreSQL_alter_Query = "ALTER TABLE public.class ADD COLUMN bug jsonb"
+        cursor.execute(postgreSQL_alter_Query)
+        connection.commit()
+
     for index, row in df.iterrows():
         project_csv = row['project']
         file_path_csv = row['file_path']
@@ -33,11 +57,6 @@ try:
                 hunk = re.findall("@@ (.*) @@", row['patch'])
                 print(path)
                 print(hunk)
-
-    # Add smells result column IF IT DOES NOT EXIST
-    # postgreSQL_alter_Query = "ALTER TABLE public.class ADD COLUMN smells jsonb"
-    # cursor.execute(postgreSQL_alter_Query)
-    # connection.commit()
 
     # Fetch result
     postgreSQL_select_Query = "SELECT * FROM public.class"
