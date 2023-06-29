@@ -1,0 +1,7 @@
+venv
+tmp
+.idea
+*.log
+*.csv
+*.iml
+__pycache__
