@@ -8,9 +8,6 @@ from psycopg2 import Error
 
 df = pd.read_csv('projects_patches.csv')
 
-# print(df)
-# print(df['project'].unique())
-
 try:
     # Connect to an existing database
     connection = psycopg2.connect(user="postgres",
@@ -37,24 +34,27 @@ try:
     cursor.execute(postgreSQL_exist_Query)
     exists_bug_column = cursor.fetchone()
 
-    # Add smells result column if it does not exist
+    # Add bug boolean column if it does not exist, may be redundant if will only check smells for confirmed bug solves
     if not exists_bug_column[0]:
-        postgreSQL_alter_Query = "ALTER TABLE public.class ADD COLUMN bug jsonb"
+        postgreSQL_alter_Query = "ALTER TABLE public.class ADD COLUMN bug boolean"
         cursor.execute(postgreSQL_alter_Query)
         connection.commit()
+
+    # Both checks for column existence could be a single function (future changes? maybe use [IF NOT EXISTS] option)
 
     for index, row in df.iterrows():
         project_csv = row['project']
         file_path_csv = row['file_path']
 
-        # Fetch result
-        postgreSQL_select_Query = "SELECT * FROM class WHERE project = %s"
+        # Fetch result if it's the same project name
+        postgreSQL_select_Query = "SELECT * FROM public.class WHERE project = %s"
         cursor.execute(postgreSQL_select_Query, (project_csv,))
         record = cursor.fetchall()
         for case in record:
             split_paths = case[1].split('/', 6)
             path = split_paths[-1]
             if file_path_csv in path:
+                # Findall to get only the numbers from all hunks, but separates in different tuples inside the list
                 hunks = re.findall("@@ -(.*),(.*) [+](.*),(.*) @@", row['patch'])
                 for hunk in hunks:
                     line_number = case[7]
@@ -71,8 +71,8 @@ try:
                         smell_NOPM = metrics['CountDeclMethodPublic']
                         smell_WMC = metrics['SumCyclomaticModified']
                         smell_NC = metrics['CountClassDerived']
-                        smell_LOC = metrics['CountLine']
-                        smell_CC = metrics['AvgCyclomatic']
+                        smell_LOC = metrics['CountLine']  # Add method table here too?
+                        smell_CC = metrics['AvgCyclomatic']  # Change for method table
 
                         # Create original smells results with false as default before testing
                         smells_results = {
@@ -98,11 +98,14 @@ try:
                         if smell_CC >= 8:
                             smells_results['ComplexMethod'] = True
 
-                        smells_json = json.dumps(smells_results)
-                        print(smells_json)
+                        # Update database with the test for smells results
+                        postgreSQL_alter_Query = "UPDATE public.class SET smells = %s WHERE id = %s"
+                        cursor.execute(postgreSQL_alter_Query, (json.dumps(smells_results), case[0]))
+                        connection.commit()
 
-                        postgreSQL_alter_Query = "UPDATE class SET smells = %(obj)s WHERE id %s"
-                        cursor.execute(postgreSQL_alter_Query, (smells_json, case[0],))
+                        # Update database marking as a bug fix commit
+                        postgreSQL_alter_Query = "UPDATE public.class SET bug = %s WHERE id = %s"
+                        cursor.execute(postgreSQL_alter_Query, (True, case[0]))
                         connection.commit()
 
 except (Exception, Error) as error:
