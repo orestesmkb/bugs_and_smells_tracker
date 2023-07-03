@@ -22,47 +22,42 @@ connection = psycopg2.connect(user="postgres",
 # Create a cursor to perform database operations
 cursor = connection.cursor()
 
-try:
-    # Check if smells column already exists
-    postgreSQL_exist_Query = "SELECT EXISTS (SELECT 1 FROM information_schema.columns " \
-                             "WHERE table_name='class' AND column_name='smells')"
-    cursor.execute(postgreSQL_exist_Query)
+
+def if_not_exist_create_column(table_name, column_name, data_type):
+    psql_exist_query = "SELECT EXISTS (SELECT 1 FROM information_schema.columns " \
+                             "WHERE table_name = %s AND column_name = %s)"
+    cursor.execute(psql_exist_query, (table_name, column_name))
     exists_smells_column = cursor.fetchone()
 
-    # Add smells result column if it does not exist
     if not exists_smells_column[0]:
-        postgreSQL_alter_Query = "ALTER TABLE public.class ADD COLUMN smells jsonb"
-        cursor.execute(postgreSQL_alter_Query)
+        psql_alter_query = "ALTER TABLE public.class ADD COLUMN (%s) (%s)"
+        cursor.execute(psql_alter_query, (column_name, data_type))
         connection.commit()
 
-    # Check if bug column already exists
-    postgreSQL_exist_Query = "SELECT EXISTS (SELECT 1 FROM information_schema.columns " \
-                             "WHERE table_name='class' AND column_name='bug_fix')"
-    cursor.execute(postgreSQL_exist_Query)
-    exists_bug_column = cursor.fetchone()
 
-    # Add bug boolean column if it does not exist, may be redundant if it'll only check smells for confirmed bug solves
-    if not exists_bug_column[0]:
-        postgreSQL_alter_Query = "ALTER TABLE public.class ADD COLUMN bug_fix boolean"
-        cursor.execute(postgreSQL_alter_Query)
-        connection.commit()
+try:
+    # Check if smells column exists and create it if it does not exist yet
+    if_not_exist_create_column('class', 'smells', 'jsonb')
+    # Check if bug_fix column exists and create it if it does not exist yet
+    if_not_exist_create_column('class', 'bug_fix', 'boolean')
 
-    # Both checks for column existence could be a single function (future changes? maybe use [IF NOT EXISTS] option)
-
+    # Loop for all rows in the csv file
     for index, row in df.iterrows():
         counter_total += 1
         project_csv = row['project']
         file_path_csv = row['file_path']
 
-        # Fetch classes if it's the same project name as in the csv file
+        # Fetch classes if it's the same project name as in the csv row
         postgreSQL_select_Query = "SELECT * FROM public.class WHERE project = %s"
         cursor.execute(postgreSQL_select_Query, (project_csv,))
         classes = cursor.fetchall()
 
+        # Loop for all classes in the database with the same project as the current csv row
         for case in classes:
             split_paths = case[1].split('/', 6)
             path = split_paths[-1]
 
+            # Check if the file path in the csv row is contained in the current csv row path
             if file_path_csv in path:
                 # Fetch methods if it's the same class id as the id of the class in case
                 class_id = case[0]
@@ -81,6 +76,7 @@ try:
                     second_start = int(hunk[2])
                     second_end = int(hunk[2]) + int(hunk[3])
 
+                    # Check if line number in class table from database is within hunk intervals
                     if first_start <= class_line_number <= first_end or second_start <= class_line_number <= second_end:
 
                         # Update class table marking as a bug fix commit
@@ -120,6 +116,7 @@ try:
                         for method in methods:
                             method_line_number = method[7]
 
+                            # Check if line number in method table from database is also within hunk intervals
                             if first_start <= method_line_number <= first_end \
                                     or second_start <= method_line_number <= second_end:
 
