@@ -37,19 +37,21 @@ def if_not_exist_create_column(table_name, column_name, data_type):
 
 try:
     # Check if smells column exists and create it if it does not exist yet
-    if_not_exist_create_column('class', 'smells', 'jsonb')
+    # if_not_exist_create_column('class', 'smells', 'jsonb')
     # Check if bug_fix column exists and create it if it does not exist yet
-    if_not_exist_create_column('class', 'bug_fix', 'boolean')
+    # if_not_exist_create_column('class', 'bug_fix', 'boolean')
 
     # Loop for all rows in the csv file
     for index, row in df.iterrows():
         counter_total += 1
         project_csv = row['project']
         file_path_csv = row['file_path']
+        split_path_csv = file_path_csv.split('/')
+        path_csv = split_path_csv[-1]
 
         # Fetch classes if it's the same project name as in the csv row
-        postgreSQL_select_Query = "SELECT * FROM public.class WHERE project = %s"
-        cursor.execute(postgreSQL_select_Query, (project_csv,))
+        postgreSQL_select_Query = "SELECT * FROM public.class WHERE project = %s AND position(%s in file)>0"
+        cursor.execute(postgreSQL_select_Query, (project_csv, path_csv))
         classes = cursor.fetchall()
 
         # Loop for all classes in the database with the same project as the current csv row
