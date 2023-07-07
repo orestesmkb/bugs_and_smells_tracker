@@ -30,16 +30,23 @@ def if_not_exist_create_column(table_name, column_name, data_type):
     exists_smells_column = cursor.fetchone()
 
     if not exists_smells_column[0]:
-        psql_alter_query = 'ALTER TABLE public.class ADD COLUMN column_name = %s %s'
-        cursor.execute(psql_alter_query, (column_name, data_type))
+        psql_alter_query = 'ALTER TABLE %s ADD COLUMN %s %s'
+        cursor.execute(psql_alter_query, (table_name, column_name, data_type))
         connection.commit()
 
 
 try:
     # Check if smells column exists and create it if it does not exist yet
-    if_not_exist_create_column('class', 'smells', 'jsonb')
+    # if_not_exist_create_column('class', 'smells', 'jsonb')
     # Check if bug_fix column exists and create it if it does not exist yet
-    if_not_exist_create_column('class', 'bug_fix', 'boolean')
+    # if_not_exist_create_column('class', 'bug_fix', 'boolean')
+
+    # psql_alter_query = 'ALTER TABLE public.class ADD COLUMN smells jsonb'
+    # cursor.execute(psql_alter_query)
+    # connection.commit()
+    # psql_alter_query = 'ALTER TABLE public.class ADD COLUMN bug_fix boolean'
+    # cursor.execute(psql_alter_query)
+    # connection.commit()
 
     # Loop for all rows in the csv file
     for index, row in df.iterrows():
