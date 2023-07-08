@@ -2,6 +2,7 @@ import re
 import json
 
 import time
+from tqdm.auto import tqdm
 
 import pandas as pd
 
@@ -49,7 +50,7 @@ try:
     # connection.commit()
 
     # Loop for all rows in the csv file
-    for index, row in df.iterrows():
+    for index, row in tqdm(df.iterrows()):
         counter_total += 1
         project_csv = row['project']
         file_path_csv = row['file_path']
