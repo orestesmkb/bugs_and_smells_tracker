@@ -65,10 +65,10 @@ try:
             # Findall to get only the numbers from all hunks, but separates in different tuples inside the list
             hunks = re.findall("@@ -(.*),(.*) [+](.*),(.*) @@", row['patch'])
 
-            # Add default bug fix flag
+            # Create or reset default bug fix flag
             bug_fix_flag = False
 
-            # Create original smells results with all false as default before testing
+            # Create or reset default smells results with all false as default before testing
             smells_results = {
                 'MultifacetedAbstraction': False,
                 'UnnecessaryAbstraction': False,
@@ -134,11 +134,11 @@ try:
                             if smell_CC >= 8:
                                 smells_results['ComplexMethod'] = True
 
-                    if counter_success >= 10:
-                        df['bug_fix'] = pd.Series(bug_fix_tuple)
-                        df['smells'] = pd.Series(smells_results)
-                        print(df)
-                        raise Exception('Assigned counter limit reached')
+            if counter_success >= 100:
+                df['bug_fix'] = pd.Series(bug_fix_tuple)
+                df['smells'] = pd.Series(smells_results)
+                print(df)
+                raise Exception('Assigned counter limit reached')
             if bug_fix_flag:
                 counter_success += 1
 
