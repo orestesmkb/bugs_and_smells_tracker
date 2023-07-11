@@ -47,7 +47,6 @@ try:
 
     # Loop for all rows in the csv file
     for index, row in tqdm(df.iterrows()):
-        counter_total += 1
         project_csv = row['project']
         file_path_csv = row['file_path']
 
