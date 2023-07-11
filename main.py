@@ -1,7 +1,6 @@
 import re
 import json
 
-import time
 from tqdm.auto import tqdm
 
 import pandas as pd
@@ -9,9 +8,8 @@ import pandas as pd
 import psycopg2
 from psycopg2 import Error
 
-start = time.time()
-
 df = pd.read_csv('projects_patches.csv')
+print(df)
 
 counter_success = 0
 counter_total = 0
@@ -25,6 +23,7 @@ cursor = connection.cursor()
 
 
 def if_not_exist_create_column(table_name, column_name, data_type):
+    # Need to fix this function to avoid possibility of SQL injection and make the second query work
     psql_exist_query = 'SELECT EXISTS (SELECT 1 FROM information_schema.columns ' \
                        'WHERE table_name = %s AND column_name = %s)'
     cursor.execute(psql_exist_query, (table_name, column_name))
@@ -189,10 +188,10 @@ try:
                 connection.commit()
 
             # If it is a bug fix mark as a success
-            # if bug_fix_flag:
-                # counter_success += 1
-            if counter_success >= 1000:
-                raise Exception('Assigned counter limit reached')
+            if bug_fix_flag:
+                counter_success += 1
+            # if counter_success >= 1000:
+                # raise Exception('Assigned counter limit reached')
 
 except (Exception, Error) as error:
     print('Error while connecting to PostgreSQL', error)
@@ -202,9 +201,6 @@ finally:
         cursor.close()
         connection.close()
         print('PostgreSQL connection is closed')
-        print('Time elapsed in seconds:')
-        end = time.time()
-        print(end - start)
         print('Successful cases:')
         print(counter_success)
         print('Total cases:')
