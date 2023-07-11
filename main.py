@@ -10,7 +10,6 @@ df = pd.read_csv('projects_patches.csv')
 print(df)
 
 counter_success = 0
-counter_total = 0
 
 # Connect to an existing database
 connection = psycopg2.connect(user='postgres',
@@ -198,5 +197,3 @@ finally:
         print('PostgreSQL connection is closed')
         print('Successful cases:')
         print(counter_success)
-        print('Total cases:')
-        print(counter_total)
