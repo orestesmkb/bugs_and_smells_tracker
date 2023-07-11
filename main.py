@@ -105,20 +105,47 @@ try:
 
                         # Get metrics for code smells
                         class_metrics = case[9]
-                        smell_LCOM = class_metrics['PercentLackOfCohesion']
-                        smell_NOF = class_metrics['CountDeclClassVariable'] + class_metrics['CountDeclInstanceVariable']
-                        smell_NOM = class_metrics['CountDeclMethod']
-                        smell_NOPM = class_metrics['CountDeclMethodPublic']
-                        smell_WMC = class_metrics['SumCyclomaticModified']
-                        smell_NC = class_metrics['CountClassDerived']
+
+                        if 'CountLine' in class_metrics:
+                            smell_LCOM = class_metrics['PercentLackOfCohesion']
+                        else:
+                            smell_LCOM = 0
+
+                        if 'CountLine' in class_metrics:
+                            smell_NOF = class_metrics['CountDeclClassVariable'] + class_metrics['CountDeclInstanceVariable']
+                        else:
+                            smell_NOF = 0
+
+                        if 'CountLine' in class_metrics:
+                            smell_NOM = class_metrics['CountDeclMethod']
+                        else:
+                            smell_NOM = 0
+
+                        if 'CountLine' in class_metrics:
+                            smell_NOPM = class_metrics['CountDeclMethodPublic']
+                        else:
+                            smell_NOPM = 0
+
+                        if 'CountLine' in class_metrics:
+                            smell_WMC = class_metrics['SumCyclomaticModified']
+                        else:
+                            smell_WMC = 0
+
+                        if 'CountLine' in class_metrics:
+                            smell_NC = class_metrics['CountClassDerived']
+                        else:
+                            smell_NC = 0
 
                         # Individual test for each smell
                         if smell_LCOM >= 80 and smell_NOF >= 7 and smell_NOM >= 7:
                             smells_results['MultifacetedAbstraction'] = True
+
                         if smell_NOF >= 5 and smell_NOM == 0:
                             smells_results['UnnecessaryAbstraction'] = True
+
                         if smell_NOPM >= 20 or smell_NOM >= 30 or smell_WMC >= 100:
                             smells_results['InsufficientModularization'] = True
+
                         if smell_NC >= 10:
                             smells_results['WideHierarchy'] = True
 
@@ -162,8 +189,8 @@ try:
                 connection.commit()
 
             # If it is a bug fix mark as a success
-            if bug_fix_flag:
-                counter_success += 1
+            # if bug_fix_flag:
+                # counter_success += 1
             if counter_success >= 1000:
                 raise Exception('Assigned counter limit reached')
 
