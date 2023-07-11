@@ -1,12 +1,15 @@
 import csv
 import re
 
+import pandas as pd
+
 import psycopg2
 from psycopg2 import Error
 from tqdm.auto import tqdm
 
 # Removing data frame to check if iterating over it slows down the code
-# df = pd.read_csv('projects_patches.csv')
+df = pd.read_csv('projects_patches.csv')
+print(df)
 
 bug_fix_tuple = ()
 smells_results_tuple = ()
@@ -36,7 +39,7 @@ def if_not_exist_create_column(table_name, column_name, data_type):
 try:
 
     # Opening the csv file as a dictionary
-    with open('projects_patches.csv', mode='r') as csv_file:
+    with open('projects_patches.csv', mode='r', encoding="utf8") as csv_file:
         csv_reader = csv.DictReader(csv_file)
 
         # Loop for all rows in the csv file
@@ -132,7 +135,7 @@ try:
                                 if smell_CC >= 8:
                                     smells_results['ComplexMethod'] = True
 
-                if counter_success >= 100:
+                if counter_success >= 1000:
                     # Removed data frame
                     # df['bug_fix'] = pd.Series(bug_fix_tuple)
                     # df['smells'] = pd.Series(smells_results)
