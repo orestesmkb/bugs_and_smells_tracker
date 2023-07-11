@@ -1,5 +1,4 @@
 import re
-import json
 
 import pandas as pd
 
@@ -41,8 +40,6 @@ try:
     for index, row in tqdm(df.iterrows()):
         project_csv = row['project']
         file_path_csv = row['file_path']
-        # split_path_csv = file_path_csv.split('/')
-        # path_csv = split_path_csv[-1]
 
         # Fetch classes if it's the same project name and file path as in the csv row
         postgreSQL_select_Query = "SELECT * FROM public.class WHERE project = %s AND position(%s in file)>0"
@@ -51,12 +48,8 @@ try:
 
         # Loop for all classes in the database with the same project as the current csv row
         for case in tqdm(classes):
-            split_paths = case[1].split('/', 6)
-            path = split_paths[-1]
 
-            # Check if the file path in the csv row is contained in the current csv row path
-            # if file_path_csv in path:
-            # Fetch methods if it's the same class id as the id of the class in case
+            # Get methods with same class id as the class in case
             class_id = case[0]
             postgreSQL_select_Query = "SELECT * FROM public.method WHERE class_id = %s"
             cursor.execute(postgreSQL_select_Query, (class_id,))
@@ -134,13 +127,14 @@ try:
                             if smell_CC >= 8:
                                 smells_results['ComplexMethod'] = True
 
+            if bug_fix_flag:
+                counter_success += 1
+
             if counter_success >= 100:
                 df['bug_fix'] = pd.Series(bug_fix_tuple)
                 df['smells'] = pd.Series(smells_results)
                 print(df)
                 raise Exception('Assigned counter limit reached')
-            if bug_fix_flag:
-                counter_success += 1
 
 except (Exception, Error) as error:
     print("Error while connecting to PostgreSQL", error)
