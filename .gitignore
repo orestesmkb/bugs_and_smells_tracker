@@ -5,3 +5,4 @@ tmp
 *.csv
 *.iml
 __pycache__
+*.tmp

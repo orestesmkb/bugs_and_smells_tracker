@@ -147,12 +147,6 @@ try:
                         if first_start <= method_line_number <= first_end \
                                 or second_start <= method_line_number <= second_end:
 
-                            # # Update method table marking as a bug fix commit
-                            # method_id = method[0]
-                            # postgreSQL_alter_Query = "UPDATE public.method SET bug_fix = %s WHERE id = %s"
-                            # cursor.execute(postgreSQL_alter_Query, (True, method_id))
-                            # connection.commit()
-
                             method_metrics = method[9]
 
                             if 'CountLine' in method_metrics:
