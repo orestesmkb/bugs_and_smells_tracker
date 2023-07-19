@@ -1,9 +1,11 @@
+import csv
+import sys
 import subprocess
 
-import psycopg2
-from psycopg2 import Error
+csv.field_size_limit(sys.maxsize)
 
-TOKENIZER_BIN = r"C:\Users\orest\IdeaProjects\tokenizer\src\tokenizer"
+# Bellow is the path to tokenizer executable file in Ubuntu
+TOKENIZER_BIN = r"/home/orestesmkb/Documents/tokenizer/src/tokenizer"
 
 
 def get_tokens(language, file):
@@ -32,29 +34,22 @@ def create_tmp_file(code_text):
         return None
 
 
-# Connect to an existing database
-connection = psycopg2.connect(user='postgres',
-                              password='1234',
-                              dbname='metrics')
-# Create a cursor to perform database operations
-cursor = connection.cursor()
+# Open csv with data to create tokens and save them all in a new file
+with open('tokenizer_data.csv', encoding="utf-8", newline='') as csvfile1:
+    reader = csv.DictReader(csvfile1)
 
-# Fetch classes if it's the same project name and file path as in the csv row
-postgreSQL_select_Query = "SELECT * FROM public.class WHERE bug_fix = %s"
-cursor.execute(postgreSQL_select_Query, ('true',))
-bugs = cursor.fetchall()
+    with open('tokenized_file.csv', 'w', encoding="utf-8", newline='') as csvfile2:
+        fieldnames = ['id', 'language', 'text', 'smells', 'tokens']
+        writer = csv.DictWriter(csvfile2, fieldnames=fieldnames)
+        writer.writeheader()
 
-try:
-    for bug in bugs:
-        db_content = bug[8]
-        temp_file = create_tmp_file(db_content)
-        db_language = bug[2]
-        result_tokens = get_tokens(db_language, temp_file)
+        for row in reader:
+            csv_id = row['id']
+            csv_language = row['language']
+            csv_text = row['text']
+            csv_smells = row['smells']
 
-except (Exception, Error) as error:
-    print('Error while connecting to PostgreSQL', error)
-
-finally:
-    if connection:
-        cursor.close()
-        connection.close()
+            temp_file = create_tmp_file(csv_text)
+            result_tokens = get_tokens(csv_language, temp_file)
+            writer.writerow({'id': csv_id, 'language': csv_language, 'text': csv_text, 'smells': csv_smells,
+                             'tokens': result_tokens})
