@@ -47,6 +47,7 @@ for language in languages:
                 # Write header only if it's the first row
                 if first_row:
                     writer.writeheader()
+                    first_row = False
 
                 # Check if each smell exist in that row and set format for jupyter notebooks
                 if smells[smell]:
