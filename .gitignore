@@ -6,3 +6,4 @@ tmp
 *.iml
 __pycache__
 *.tmp
+*.tar

@@ -27,6 +27,7 @@ languages = df['language'].unique()
 # Separate in individual Data Frames for each language
 for language in languages:
     lang_df = df.loc[df['language'] == language]
+    # print(lang_df)
     first_row = True
 
     # Loop each row to get data

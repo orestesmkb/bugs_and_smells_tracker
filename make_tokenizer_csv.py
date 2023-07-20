@@ -30,6 +30,8 @@ try:
             db_language = bug[2]
             db_content = bug[8]
             db_smells = bug[13]
+            if db_id < 0 or db_language == '' or db_content == '' or db_smells == {}:
+                continue
             writer.writerow({'id': db_id, 'language': db_language, 'text': db_content, 'smells': db_smells})
 
 except (Exception, Error) as error:
