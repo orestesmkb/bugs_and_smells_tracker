@@ -20,7 +20,7 @@ cursor = connection.cursor()
 
 
 def if_not_exist_create_column(table_name, column_name, data_type):
-    # Need to fix this function to avoid possibility of SQL injection and make the second query work
+    # TODO: Need to fix this function to avoid possibility of SQL injection and make the second query work
     psql_exist_query = 'SELECT EXISTS (SELECT 1 FROM information_schema.columns ' \
                        'WHERE table_name = %s AND column_name = %s)'
     cursor.execute(psql_exist_query, (table_name, column_name))
@@ -56,20 +56,10 @@ try:
         classes = cursor.fetchall()
 
         # Loop for all classes in the database with the same project as the current csv row
-        for case in classes:
+        for case in tqdm(classes):
 
             # Set or reset bug fix flag as false for each case
             bug_fix_flag = False
-
-            # Create or reset default smells results with all false as default before testing
-            smells_results = {
-                'MultifacetedAbstraction': False,
-                'UnnecessaryAbstraction': False,
-                'InsufficientModularization': False,
-                'WideHierarchy': False,
-                'LongMethod': False,
-                'ComplexMethod': False
-            }
 
             # Fetch methods if it's the same class id as the id of the class in case
             class_id = case[0]
@@ -94,75 +84,97 @@ try:
                     # Set bug fix flag as true if line number within intervals
                     bug_fix_flag = True
 
-                    # Get metrics for code smells
-                    class_metrics = case[9]
+                for method in methods:
+                    method_line_number = method[7]
 
-                    if 'CountLine' in class_metrics:
-                        smell_LCOM = class_metrics['PercentLackOfCohesion']
-                    else:
-                        smell_LCOM = 0
+                    # Check if line number in method table from database is also within hunk intervals
+                    if first_start <= method_line_number <= first_end \
+                            or second_start <= method_line_number <= second_end:
 
-                    if 'CountLine' in class_metrics:
-                        smell_NOF = class_metrics['CountDeclClassVariable'] + class_metrics['CountDeclInstanceVariable']
-                    else:
-                        smell_NOF = 0
+                        # Set bug fix flag as true if line number within intervals
+                        bug_fix_flag = True
 
-                    if 'CountLine' in class_metrics:
-                        smell_NOM = class_metrics['CountDeclMethod']
-                    else:
-                        smell_NOM = 0
+            # Create or reset default smells results with all false as default before testing
+            smells_results = {
+                'MultifacetedAbstraction': False,
+                'UnnecessaryAbstraction': False,
+                'InsufficientModularization': False,
+                'WideHierarchy': False,
+                'LongMethod': False,
+                'ComplexMethod': False
+            }
 
-                    if 'CountLine' in class_metrics:
-                        smell_NOPM = class_metrics['CountDeclMethodPublic']
-                    else:
-                        smell_NOPM = 0
+            # Get metrics for code smells for each class
+            class_metrics = case[9]
 
-                    if 'CountLine' in class_metrics:
-                        smell_WMC = class_metrics['SumCyclomaticModified']
-                    else:
-                        smell_WMC = 0
+            if 'PercentLackOfCohesion' in class_metrics:
+                smell_LCOM = class_metrics['PercentLackOfCohesion']
+            else:
+                smell_LCOM = 0
 
-                    if 'CountLine' in class_metrics:
-                        smell_NC = class_metrics['CountClassDerived']
-                    else:
-                        smell_NC = 0
+            if 'CountDeclClassVariable' in class_metrics or 'CountDeclInstanceVariable' in class_metrics:
+                smell_NOF = class_metrics['CountDeclClassVariable'] + class_metrics['CountDeclInstanceVariable']
+            else:
+                smell_NOF = 0
 
-                    # Individual test for each smell
-                    if smell_LCOM >= 80 and smell_NOF >= 7 and smell_NOM >= 7:
-                        smells_results['MultifacetedAbstraction'] = True
+            if 'CountDeclMethod' in class_metrics:
+                smell_NOM = class_metrics['CountDeclMethod']
+            else:
+                smell_NOM = 0
 
-                    if smell_NOF >= 5 and smell_NOM == 0:
-                        smells_results['UnnecessaryAbstraction'] = True
+            if 'CountDeclMethodPublic' in class_metrics:
+                smell_NOPM = class_metrics['CountDeclMethodPublic']
+            else:
+                smell_NOPM = 0
 
-                    if smell_NOPM >= 20 or smell_NOM >= 30 or smell_WMC >= 100:
-                        smells_results['InsufficientModularization'] = True
+            if 'SumCyclomaticModified' in class_metrics:
+                smell_WMC = class_metrics['SumCyclomaticModified']
+            else:
+                smell_WMC = 0
 
-                    if smell_NC >= 10:
-                        smells_results['WideHierarchy'] = True
+            if 'CountClassDerived' in class_metrics:
+                smell_NC = class_metrics['CountClassDerived']
+            else:
+                smell_NC = 0
 
-                    for method in methods:
-                        method_line_number = method[7]
+            # Appears in both class and method but granularity appoints method only
+            # if 'CountLine' in class_metrics:
+            #     smell_LOC = class_metrics['CountLine']
+            # else:
+            #     smell_LOC = 0
 
-                        # Check if line number in method table from database is also within hunk intervals
-                        if first_start <= method_line_number <= first_end \
-                                or second_start <= method_line_number <= second_end:
+            # Individual test for each smell for each class
+            if smell_LCOM >= 80 and smell_NOF >= 7 and smell_NOM >= 7:
+                smells_results['MultifacetedAbstraction'] = True
 
-                            method_metrics = method[9]
+            if smell_NOF >= 5 and smell_NOM == 0:
+                smells_results['UnnecessaryAbstraction'] = True
 
-                            if 'CountLine' in method_metrics:
-                                smell_LOC = method_metrics['CountLine']
-                            else:
-                                smell_LOC = 0
-                            if 'Cyclomatic' in method_metrics:
-                                smell_CC = method_metrics['Cyclomatic']
-                            else:
-                                smell_CC = 0
+            if smell_NOPM >= 20 or smell_NOM >= 30 or smell_WMC >= 100:
+                smells_results['InsufficientModularization'] = True
 
-                            if smell_LOC >= 100:
-                                smells_results['LongMethod'] = True
-                                
-                            if smell_CC >= 8:
-                                smells_results['ComplexMethod'] = True
+            if smell_NC >= 10:
+                smells_results['WideHierarchy'] = True
+
+            for method in methods:
+                # Get metrics for code smells for each method in that class
+                method_metrics = method[9]
+
+                if 'CountLine' in method_metrics:
+                    smell_LOC = method_metrics['CountLine']
+                else:
+                    smell_LOC = 0
+                if 'Cyclomatic' in method_metrics:
+                    smell_CC = method_metrics['Cyclomatic']
+                else:
+                    smell_CC = 0
+
+                # Individual test for each smell for each method
+                if smell_LOC >= 100:
+                    smells_results['LongMethod'] = True
+
+                if smell_CC >= 8:
+                    smells_results['ComplexMethod'] = True
 
             # Update class table marking as a bug fix commit
             postgreSQL_alter_Query = 'UPDATE public.class SET bug_fix = %s WHERE id = %s'
