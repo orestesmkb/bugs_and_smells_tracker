@@ -80,4 +80,5 @@ except (Exception, Error) as error:
 finally:
     if connection:
         cursor.close()
+        print('PostgreSQL connection is closed')
         connection.close()
