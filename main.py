@@ -107,6 +107,7 @@ try:
             # Get metrics for code smells for each class
             class_metrics = case[9]
 
+            # TODO: Change verifying all smells to a single function
             if 'PercentLackOfCohesion' in class_metrics:
                 smell_LCOM = class_metrics['PercentLackOfCohesion']
             else:
