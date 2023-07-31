@@ -16,21 +16,30 @@ def create_folder(folder_path):
 
 # check whether directory already exists and if it does not, create it
 create_folder('csv files')
+
 bug_fix_path = r'csv files\bug fix'
 create_folder(bug_fix_path)
 create_folder(bug_fix_path + '\\all')
 create_folder(bug_fix_path + '\\train')
 create_folder(bug_fix_path + '\\test')
+
 harmful_clean_path = r'csv files\harmful-clean'
 create_folder(harmful_clean_path)
 create_folder(harmful_clean_path + '\\all')
 create_folder(harmful_clean_path + '\\train')
 create_folder(harmful_clean_path + '\\test')
 
+harmful_bug_path = r'csv files\harmful-bug'
+create_folder(harmful_bug_path)
+create_folder(harmful_bug_path + '\\all')
+create_folder(harmful_bug_path + '\\train')
+create_folder(harmful_bug_path + '\\test')
+
 # Get data from csv file
 df = pd.read_csv(r'csv files\bug_tokenized_file.csv')
 df1 = pd.read_csv(r'csv files\harmful_tokenized_file.csv')
 df2 = pd.read_csv(r'csv files\clean_tokenized_file.csv')
+df3 = pd.read_csv(r'csv files\bug_without_smells_tokenized_file.csv')
 # Check how many languages there are
 languages = df['language'].unique()
 smells = {}
@@ -40,6 +49,7 @@ for language in languages:
     lang_df = df.loc[df['language'] == language]
     lang_df1 = df1.loc[df1['language'] == language]
     lang_df2 = df2.loc[df2['language'] == language]
+    lang_df3 = df3.loc[df3['language'] == language]
     print(' ')
     print(language)
     print('bug fix cases:')
@@ -50,6 +60,9 @@ for language in languages:
     print('')
     print('clean code cases:')
     print(len(lang_df2))
+    print('')
+    print('bug without smells code cases:')
+    print(len(lang_df3))
     first_row = True
 
     # TODO: Too much repetition on the harmful/clean code, maybe could become a function
@@ -95,6 +108,27 @@ for language in languages:
 
             writer.writerow(
                 {'id': csv_id2, 'language': language, 'text': text2, 'smell': smell_val2, 'tokens': tokens2})
+
+    file_name3 = language + '_' + 'BugNoSmells' + '.csv'
+
+    # Open file inside new directory
+    with open((harmful_bug_path + '\\all\\' + file_name3), 'w', encoding="utf-8", newline='') as csvfile:
+        fieldnames = ['id', 'language', 'text', 'smell', 'tokens']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for index, row in lang_df3.iterrows():
+            csv_id3 = row['id']
+            text3 = row['text']
+            tokens3 = row['tokens']
+            smells3 = ast.literal_eval(row['smells'])
+            if any(smells3.values()):
+                print('Error: row in data for bug without smells code with at least one smell')
+                break
+            smell_val3 = 0
+
+            writer.writerow(
+                {'id': csv_id3, 'language': language, 'text': text3, 'smell': smell_val3, 'tokens': tokens3})
 
     # Loop each row to get data
     for index, row in lang_df.iterrows():
@@ -144,18 +178,36 @@ for language in languages:
     clean_df = pd.read_csv(open_path)
     train2, test2 = train_test_split(clean_df, test_size=0.2)
 
-    train = pd.concat([train1, train2])
-    test = pd.concat([test1, test2])
+    bug_no_smells_name = language + '_' + 'BugNoSmells'
+    open_path = harmful_bug_path + '\\all\\' + bug_no_smells_name + '.csv'
+    bug_no_smells_df = pd.read_csv(open_path)
+    train3, test3 = train_test_split(bug_no_smells_df, test_size=0.2)
 
-    print(train)
-    print(test)
+    concat_train1 = pd.concat([train1, train2])
+    concat_test1 = pd.concat([test1, test2])
+
+    print(concat_train1)
+    print(concat_test1)
 
     file_name = language + '_' + 'HarmfulCode'
     header = ['id', 'language', 'text', 'smell', 'tokens']
     train_path = harmful_clean_path + '\\train\\' + file_name + '_Train_1.csv'
-    train.to_csv(train_path, header=header, encoding='utf-8', index=False)
+    concat_train1.to_csv(train_path, header=header, encoding='utf-8', index=False)
     test_path = harmful_clean_path + '\\test\\' + file_name + '_Test_1.csv'
-    test.to_csv(test_path, header=header, encoding='utf-8', index=False)
+    concat_test1.to_csv(test_path, header=header, encoding='utf-8', index=False)
+
+    concat_train2 = pd.concat([train1, train3])
+    concat_test2 = pd.concat([test1, test3])
+
+    print(concat_train2)
+    print(concat_test2)
+
+    file_name = language + '_' + 'HarmfulVsBug'
+    header = ['id', 'language', 'text', 'smell', 'tokens']
+    train_path = harmful_bug_path + '\\train\\' + file_name + '_Train_1.csv'
+    concat_train2.to_csv(train_path, header=header, encoding='utf-8', index=False)
+    test_path = harmful_bug_path + '\\test\\' + file_name + '_Test_1.csv'
+    concat_test2.to_csv(test_path, header=header, encoding='utf-8', index=False)
 
     for smell in smells:
         # Get data from csv file
