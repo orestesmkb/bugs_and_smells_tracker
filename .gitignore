@@ -8,4 +8,3 @@ __pycache__
 *.tmp
 *.tar
 content
-plot_test.py

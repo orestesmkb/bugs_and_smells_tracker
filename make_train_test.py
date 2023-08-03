@@ -36,10 +36,27 @@ create_folder(harmful_bug_path + '\\train')
 create_folder(harmful_bug_path + '\\test')
 
 # Get data from csv file
+print(' ')
+print('Largest token size:')
 df = pd.read_csv(r'csv files\bug_tokenized_file.csv')
+split_tokens = df.tokens.str.split(' ')
+
+# max_val = len(split_tokens[0])
+# for split in split_tokens:
+#     if max_val < len(split):
+#         max_val = len(split)
+# print(max_val)
+
+print(split_tokens.str.len().max())
 df1 = pd.read_csv(r'csv files\harmful_tokenized_file.csv')
+split_tokens = df1.tokens.str.split(' ')
+print(split_tokens.str.len().max())
 df2 = pd.read_csv(r'csv files\clean_tokenized_file.csv')
+split_tokens = df2.tokens.str.split(' ')
+print(split_tokens.str.len().max())
 df3 = pd.read_csv(r'csv files\bug_without_smells_tokenized_file.csv')
+split_tokens = df3.tokens.str.split(' ')
+print(split_tokens.str.len().max())
 # Check how many languages there are
 languages = df['language'].unique()
 smells = {}
