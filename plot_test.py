@@ -22,6 +22,7 @@ COMMENTS = [
 ]
 RANDOM_STATE = 33
 LANGUAGES = ['Java', 'C#', 'C++']
+# TODO: Add other "smells" in comments and verify padding_tokens values
 SMELLS = [
     {'name': 'MultifacetedAbstraction', 'suffix': 'ma', 'padding_tokens': 17000},
     {'name': 'UnnecessaryAbstraction', 'suffix': 'ua', 'padding_tokens': 17000},
@@ -72,13 +73,13 @@ def init_data():
         'n_test_samples': [],
         'n_train_samples': [],
         'accuracy': [],
+        'precision': [],
+        'recall': [],
+        'f1': [],
         'tn': [],
         'fp': [],
         'fn': [],
-        'tp': [],
-        'precision': [],
-        'recall': [],
-        'f1': []
+        'tp': []
     }
 
 
@@ -101,7 +102,7 @@ def select_samples(smell_csv, n_samples):
 
 
 def process(data, dataset_id, dataset, x, y, smell, languages, target_language, model_name2, model_n_sample=None):
-    fig = plt.figure(figsize=(16, 20))
+    fig = plt.figure(figsize=(20, 5))
     i = 131
 
     for model_language in languages:
@@ -136,22 +137,17 @@ def process(data, dataset_id, dataset, x, y, smell, languages, target_language, 
         try:
             cf_matrix = confusion_matrix(y, (predictions > 0.5).astype("int32"))
             tn, fp, fn, tp = cf_matrix.ravel()
-            print(tn, fp, fn, tp)
             precision = tp / (tp + fp)
             recall = tp / (tp + fn)
             f1 = 2 * (precision * recall) / (precision + recall)
 
-            # TODO: Pegar a matriz com maior f1 para cada linguagem por smell
-            # TODO: Pegar a matriz com maior f1 geral para cada linguagem independente do smell
-            # TODO: Para matriz geral somar os valores de tn, fp, fn, tp para todas as linguagens
-
+            data['precision'].append(precision)
+            data['recall'].append(recall)
+            data['f1'].append(f1)
             data['tn'].append(tn)
             data['fp'].append(fp)
             data['fn'].append(fn)
             data['tp'].append(tp)
-            data['precision'].append(precision)
-            data['recall'].append(recall)
-            data['f1'].append(f1)
 
             fig.add_subplot(i)
             plt.title('{}: {} to {}'.format(smell['name'], model_language, target_language))
@@ -263,8 +259,12 @@ def train_n_samples(languages, n_samples, dataset_name, smell, model_function, m
             dataset = pd.read_csv(dataset_path)
 
             pos_smell_df = dataset.query('smell == 1')
-            size = len(pos_smell_df)
-            if size < n:
+            pos_size = len(pos_smell_df)
+            neg_smell_df = dataset.query('smell == 0')
+            neg_size = len(neg_smell_df)
+            print(pos_size, neg_size, n)
+            # TODO: Check if it should be n or 2xn here
+            if pos_size < 2*n or neg_size < 2*n:
                 print('Sample size too small, skipping')
                 continue
 
@@ -308,7 +308,6 @@ def transfer_learning_n_samples(model_languages, target_language, dataset_name, 
             y = dataset.iloc[:, -2]
 
             process(data, test, dataset, x, y, smell, model_languages, target_language, model_name, n)
-          # process(data, dataset_id, dataset, x, y, smell, languages, target_language, model_name2, model_n_sample=None)
 
     return data
 
@@ -329,7 +328,7 @@ def cnn(padding):
 
 # # Training Percoptron models
 # for smell in SMELLS:
-#     train_all_samples(LANGUAGES, 'Train_1', smell, perceptron, 'perceptron1')
+#      train_all_samples(LANGUAGES, 'Train_1', smell, perceptron, 'perceptron1')
 #
 # # Transfer Learning
 # results = []
@@ -362,7 +361,6 @@ results = []
 for smell in SMELLS:
     for target_language in LANGUAGES:
         results.append(transfer_learning_n_samples(LANGUAGES, target_language, 'Test_1', smell, 'perceptron1'))
-                     # transfer_learning_n_samples(model_languages, target_language, dataset_name, smell, model_name)
 
 # Saving the results of those models when evaluated using Test datasets
 for result in results:
