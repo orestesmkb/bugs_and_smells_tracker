@@ -55,6 +55,7 @@ for language in model_languages:
         for smell in smells:
             smell_df = lang_df2.loc[lang_df2['smell_name'] == smell]
             max_f1 = smell_df[smell_df['f1'] == smell_df['f1'].max()]
+            
             if max_f1.empty:
                 continue
 
@@ -71,8 +72,10 @@ for language in model_languages:
 
         else:
             max_f1 = lang_df2[lang_df2['f1'] == lang_df2['f1'].max()]
+            #TODO: fix how data is input into max_f1 dataframe
             max_f1['tn'] = all_tn
             max_f1['fp'] = all_fp
             max_f1['fn'] = all_fn
             max_f1['tp'] = all_tp
+
             plot_cf_matrix(max_f1, True)
