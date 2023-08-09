@@ -24,12 +24,12 @@ RANDOM_STATE = 33
 LANGUAGES = ['Java', 'C#', 'C++']
 # TODO: Add other "smells" in comments and verify padding_tokens values
 SMELLS = [
-    {'name': 'MultifacetedAbstraction', 'suffix': 'ma', 'padding_tokens': 17000},
-    {'name': 'UnnecessaryAbstraction', 'suffix': 'ua', 'padding_tokens': 17000},
-    {'name': 'InsufficientModularization', 'suffix': 'im', 'padding_tokens': 17000},
-    {'name': 'WideHierarchy', 'suffix': 'wh', 'padding_tokens': 17000},
-    {'name': 'ComplexMethod', 'suffix': 'cm', 'padding_tokens': 17000},
-    {'name': 'LongMethod', 'suffix': 'lm', 'padding_tokens': 17000},
+    {'name': 'MultifacetedAbstraction', 'suffix': 'ma', 'padding_tokens': 53995},
+    {'name': 'UnnecessaryAbstraction', 'suffix': 'ua', 'padding_tokens': 53995},
+    {'name': 'InsufficientModularization', 'suffix': 'im', 'padding_tokens': 53995},
+    {'name': 'WideHierarchy', 'suffix': 'wh', 'padding_tokens': 53995},
+    {'name': 'ComplexMethod', 'suffix': 'cm', 'padding_tokens': 53995},
+    {'name': 'LongMethod', 'suffix': 'lm', 'padding_tokens': 53995},
 ]
 
 MAIN_DIR = 'content'
@@ -264,7 +264,7 @@ def train_n_samples(languages, n_samples, dataset_name, smell, model_function, m
             neg_size = len(neg_smell_df)
             print(pos_size, neg_size, n)
             # TODO: Check if it should be n or 2xn here
-            if pos_size < 2*n or neg_size < 2*n:
+            if pos_size < 2 * n or neg_size < 2 * n:
                 print('Sample size too small, skipping')
                 continue
 
@@ -326,36 +326,37 @@ def cnn(padding):
     return model
 
 
-# # Training Percoptron models
-# for smell in SMELLS:
-#      train_all_samples(LANGUAGES, 'Train_1', smell, perceptron, 'perceptron1')
-#
-# # Transfer Learning
-# results = []
-#
-# for target_language in LANGUAGES:
-#     results.append(transfer_learning(LANGUAGES, target_language, 'perceptron1', 1000))
-#
-# for target_language in LANGUAGES:
-#     results.append(transfer_learning(LANGUAGES, target_language, 'perceptron1', 64))
-#
-# # Saving the results of those models when evaluated using Test datasets
-# for result in results:
-#     append_data_file(result)
-#
-# # RQ2:
-# dataset = pd.read_csv(os.path.join(RESULTS_DIR, 'data.csv'), index_col=False)
-# dataset = dataset.query("smell_name == 'ComplexMethod' and dataset.str.contains('ComplexMethod')", engine="python")
-# pd.set_option('display.max_rows', len(dataset) + 1)
-# dataset.sort_values(by=['f1'], ascending=True)
-#
-# # RQ3: Training Perceptron models
-# # train_n_samples(['Python'], [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', SMELLS[0], perceptron, 'perceptron1')
-# for smell in SMELLS:
-#     train_n_samples(LANGUAGES, [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', smell, perceptron, 'perceptron1')
+# TODO: Code starts here
+# Training Percoptron models
+for smell in SMELLS:
+    train_all_samples(LANGUAGES, 'Train_1', smell, perceptron, 'perceptron1')
 
 # Transfer Learning
-# result = transfer_learning_n_samples(['Python'], 'Java', 'Test_1', SMELLS[0], 'perceptron1')
+results = []
+
+for target_language in LANGUAGES:
+    results.append(transfer_learning(LANGUAGES, target_language, 'perceptron1', 1000))
+
+for target_language in LANGUAGES:
+    results.append(transfer_learning(LANGUAGES, target_language, 'perceptron1', 64))
+
+# Saving the results of those models when evaluated using Test datasets
+for result in results:
+    append_data_file(result)
+
+# RQ2:
+dataset = pd.read_csv(os.path.join(RESULTS_DIR, 'data.csv'), index_col=False)
+dataset = dataset.query("smell_name == 'ComplexMethod' and dataset.str.contains('ComplexMethod')", engine="python")
+pd.set_option('display.max_rows', len(dataset) + 1)
+dataset.sort_values(by=['f1'], ascending=True)
+
+# RQ3: Training Perceptron models
+# train_n_samples(['Python'], [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', SMELLS[0], perceptron, 'perceptron1')
+for smell in SMELLS:
+    train_n_samples(LANGUAGES, [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', smell, perceptron, 'perceptron1')
+
+# Transfer Learning
+result = transfer_learning_n_samples(['Python'], 'Java', 'Test_1', SMELLS[0], 'perceptron1')
 results = []
 
 for smell in SMELLS:
