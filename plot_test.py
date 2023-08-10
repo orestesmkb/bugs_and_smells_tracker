@@ -367,23 +367,23 @@ for smell in SMELLS:
 for result in results:
     append_data_file(result)
 
-# # RQ4: Training CNN models
-# for smell in SMELLS:
-#     train_all_samples(LANGUAGES, 'Train_1', smell, cnn, 'cnn1')
-#
-# # train_n_samples(['Python'], [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', SMELLS[0], cnn, 'cnn1')
-# for smell in SMELLS:
-#     train_n_samples(LANGUAGES, [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', smell, cnn, 'cnn1')
-#
-# # Transfer Learning
-# # result = transfer_learning_n_samples(['Python'], 'Java', 'Test_1', SMELLS[0], 'cnn1')
-# results = []
-#
-# for smell in SMELLS:
-#     for target_language in LANGUAGES:
-#         results.append(transfer_learning_n_samples(LANGUAGES, target_language, 'Test_1', smell, 'cnn1'))
-#
-# # Saving the results of those models when evaluated using Test datasets
-# # append_data_file(result)
-# for result in results:
-#     append_data_file(result)
+# RQ4: Training CNN models
+for smell in SMELLS:
+    train_all_samples(LANGUAGES, 'Train_1', smell, cnn, 'cnn1')
+
+# train_n_samples(['Python'], [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', SMELLS[0], cnn, 'cnn1')
+for smell in SMELLS:
+    train_n_samples(LANGUAGES, [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', smell, cnn, 'cnn1')
+
+# Transfer Learning
+# result = transfer_learning_n_samples(['Python'], 'Java', 'Test_1', SMELLS[0], 'cnn1')
+results = []
+
+for smell in SMELLS:
+    for target_language in LANGUAGES:
+        results.append(transfer_learning_n_samples(LANGUAGES, target_language, 'Test_1', smell, 'cnn1'))
+
+# Saving the results of those models when evaluated using Test datasets
+# append_data_file(result)
+for result in results:
+    append_data_file(result)
