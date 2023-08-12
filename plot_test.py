@@ -23,22 +23,28 @@ COMMENTS = [
 RANDOM_STATE = 33
 LANGUAGES = ['Java', 'C#', 'C++']
 SMELLS = [
-    {'name': 'HarmfulCode', 'suffix': 'hm', 'padding_tokens': 53995},
+    {'name': 'HarmfulCode', 'suffix': 'hm', 'padding_tokens': 28191},
 ]
 
+# Fifth case, Case B:
+# {'name': 'CaseB', 'suffix': 'cb', 'padding_tokens': 74940},
+
+# Fourth case, Case A:
+# {'name': 'CaseA', 'suffix': 'ca', 'padding_tokens': 74940},
+
 # Third case, harmful code vs bug without smells:
-# {'name': 'HarmfulVsBug', 'suffix': 'hb', 'padding_tokens': 53995},
+# {'name': 'HarmfulVsBug', 'suffix': 'hb', 'padding_tokens': 28191},
 
 # Second case, harmful code vs clean code:
-# {'name': 'HarmfulCode', 'suffix': 'hm', 'padding_tokens': 53995},
+# {'name': 'HarmfulVsClean', 'suffix': 'hc', 'padding_tokens': 28191},
 
-# First case, all bugfixes:
-# {'name': 'MultifacetedAbstraction', 'suffix': 'ma', 'padding_tokens': 53995},
-# {'name': 'UnnecessaryAbstraction', 'suffix': 'ua', 'padding_tokens': 53995},
-# {'name': 'InsufficientModularization', 'suffix': 'im', 'padding_tokens': 53995},
-# {'name': 'WideHierarchy', 'suffix': 'wh', 'padding_tokens': 53995},
-# {'name': 'ComplexMethod', 'suffix': 'cm', 'padding_tokens': 53995},
-# {'name': 'LongMethod', 'suffix': 'lm', 'padding_tokens': 53995},
+# First case, all bugfixes test for each smell:
+# {'name': 'MultifacetedAbstraction', 'suffix': 'ma', 'padding_tokens': 28191},
+# {'name': 'UnnecessaryAbstraction', 'suffix': 'ua', 'padding_tokens': 28191},
+# {'name': 'InsufficientModularization', 'suffix': 'im', 'padding_tokens': 28191},
+# {'name': 'WideHierarchy', 'suffix': 'wh', 'padding_tokens': 28191},
+# {'name': 'ComplexMethod', 'suffix': 'cm', 'padding_tokens': 28191},
+# {'name': 'LongMethod', 'suffix': 'lm', 'padding_tokens': 28191},
 
 # Original, Moabson:
 # {'name': 'GodClass', 'suffix': 'gc', 'padding_tokens': 17000},
