@@ -2,12 +2,15 @@ import json
 import re
 
 import pandas as pd
+
 import psycopg2
 from psycopg2 import Error
+
 from tqdm.auto import tqdm
 
 df = pd.read_csv('projects_patches.csv')
-print(df)
+print('Total cases in project_patches.csv:')
+print(len(df))
 
 counter_success = 0
 
@@ -33,11 +36,12 @@ def if_not_exist_create_column(table_name, column_name, data_type):
 
 
 try:
-    # Check if smells column exists and create it if it does not exist yet
+    # # Check if smells column exists and create it if it does not exist yet
     # if_not_exist_create_column('class', 'smells', 'jsonb')
     # Check if bug_fix column exists and create it if it does not exist yet
     # if_not_exist_create_column('class', 'bug_fix', 'boolean')
 
+    # # Manual creation:
     # psql_alter_query = 'ALTER TABLE public.class ADD COLUMN smells jsonb'
     # cursor.execute(psql_alter_query)
     # connection.commit()
@@ -51,7 +55,7 @@ try:
         file_path_csv = row['file_path']
 
         # Fetch classes if it's the same project name and file path as in the csv row
-        postgreSQL_select_Query = "SELECT * FROM public.class WHERE project = %s AND position(%s in file)>0"
+        postgreSQL_select_Query = 'SELECT * FROM public.class WHERE project = %s AND position(%s in file)>0'
         cursor.execute(postgreSQL_select_Query, (project_csv, file_path_csv))
         classes = cursor.fetchall()
 
@@ -68,18 +72,16 @@ try:
             methods = cursor.fetchall()
 
             # Findall to get only the numbers from all hunks, but separates in different tuples inside the list
-            hunks = re.findall("@@ -(.*),(.*) [+](.*),(.*) @@", row['patch'])
+            hunks = re.findall('@@ -(.*),(.*) [+](.*),(.*) @@', row['patch'])
 
             for hunk in hunks:
                 # get line number from class and compare with hunk intervals
                 class_line_number = case[7]
-                first_start = int(hunk[0])
-                first_end = int(hunk[0]) + int(hunk[1])
-                second_start = int(hunk[2])
-                second_end = int(hunk[2]) + int(hunk[3])
+                hunk_start = int(hunk[0])
+                hunk_end = int(hunk[0]) + int(hunk[1])
 
                 # Check if line number in class table from database is within hunk intervals
-                if first_start <= class_line_number <= first_end or second_start <= class_line_number <= second_end:
+                if hunk_start <= class_line_number <= hunk_end:
 
                     # Set bug fix flag as true if line number within intervals
                     bug_fix_flag = True
@@ -88,8 +90,7 @@ try:
                     method_line_number = method[7]
 
                     # Check if line number in method table from database is also within hunk intervals
-                    if first_start <= method_line_number <= first_end \
-                            or second_start <= method_line_number <= second_end:
+                    if hunk_start <= method_line_number <= hunk_end:
 
                         # Set bug fix flag as true if line number within intervals
                         bug_fix_flag = True
@@ -107,7 +108,7 @@ try:
             # Get metrics for code smells for each class
             class_metrics = case[9]
 
-            # TODO: Change verifying all smells to a single function
+            # TODO: Change verifying all smells to a single function if practical
             if 'PercentLackOfCohesion' in class_metrics:
                 smell_LCOM = class_metrics['PercentLackOfCohesion']
             else:
@@ -190,6 +191,7 @@ try:
             # If it is a bug fix mark as a success
             if bug_fix_flag:
                 counter_success += 1
+            # # Conditional to check time needed and test script
             # if counter_success >= 1000:
                 # raise Exception('Assigned counter limit reached')
 
