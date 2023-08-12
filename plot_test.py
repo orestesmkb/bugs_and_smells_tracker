@@ -22,15 +22,31 @@ COMMENTS = [
 ]
 RANDOM_STATE = 33
 LANGUAGES = ['Java', 'C#', 'C++']
-# TODO: Add other "smells" in comments and verify padding_tokens values
 SMELLS = [
-    {'name': 'MultifacetedAbstraction', 'suffix': 'ma', 'padding_tokens': 53995},
-    {'name': 'UnnecessaryAbstraction', 'suffix': 'ua', 'padding_tokens': 53995},
-    {'name': 'InsufficientModularization', 'suffix': 'im', 'padding_tokens': 53995},
-    {'name': 'WideHierarchy', 'suffix': 'wh', 'padding_tokens': 53995},
-    {'name': 'ComplexMethod', 'suffix': 'cm', 'padding_tokens': 53995},
-    {'name': 'LongMethod', 'suffix': 'lm', 'padding_tokens': 53995},
+    {'name': 'HarmfulCode', 'suffix': 'hm', 'padding_tokens': 53995},
 ]
+
+# Third case, harmful code vs bug without smells:
+# {'name': 'HarmfulVsBug', 'suffix': 'hb', 'padding_tokens': 53995},
+
+# Second case, harmful code vs clean code:
+# {'name': 'HarmfulCode', 'suffix': 'hm', 'padding_tokens': 53995},
+
+# First case, all bugfixes:
+# {'name': 'MultifacetedAbstraction', 'suffix': 'ma', 'padding_tokens': 53995},
+# {'name': 'UnnecessaryAbstraction', 'suffix': 'ua', 'padding_tokens': 53995},
+# {'name': 'InsufficientModularization', 'suffix': 'im', 'padding_tokens': 53995},
+# {'name': 'WideHierarchy', 'suffix': 'wh', 'padding_tokens': 53995},
+# {'name': 'ComplexMethod', 'suffix': 'cm', 'padding_tokens': 53995},
+# {'name': 'LongMethod', 'suffix': 'lm', 'padding_tokens': 53995},
+
+# Original, Moabson:
+# {'name': 'GodClass', 'suffix': 'gc', 'padding_tokens': 17000},
+# {'name': 'ShotgunSurgery', 'suffix': 'ss', 'padding_tokens': 17000},
+# {'name': 'FeatureEnvy', 'suffix': 'fe', 'padding_tokens': 17000},
+# {'name': 'DivergentChange', 'suffix': 'dv', 'padding_tokens': 17000},
+# {'name': 'FeatureEnvy+DivergentChange', 'suffix': 'fe+dv', 'padding_tokens': 17000},
+# {'name': 'LongMethod+ShotgunSurgery+FeatureEnvy+DivergentChange', 'suffix': 'lm+ss+fe+dv', 'padding_tokens': 17000},
 
 MAIN_DIR = 'content'
 TRAIN_DIR = os.path.join(MAIN_DIR, 'code_smells_datasets', 'train')
@@ -101,13 +117,17 @@ def select_samples(smell_csv, n_samples):
     return dataset
 
 
-def process(data, dataset_id, dataset, x, y, smell, languages, target_language, model_name2, model_n_sample=None):
+def process(data, dataset_id, dataset, x, y, smell, languages, target_language, model_name2, model_n_sample_val=None):
     fig = plt.figure(figsize=(20, 5))
+    # Initial subplot coordinates
     i = 131
 
     for model_language in languages:
-        # if target_language == model_language:
-        #     continue
+        if type(model_n_sample_val) == dict:
+            model_n_sample = model_n_sample_val[smell['name']]
+            model_n_sample = model_n_sample[model_language]
+        else:
+            model_n_sample = model_n_sample_val
 
         model_name = '{}_{}_{}_{}'.format(model_language, model_name2, model_n_sample, smell['suffix'])
         model_path = os.path.join(MODELS_DIR, model_name)
@@ -168,6 +188,7 @@ def process(data, dataset_id, dataset, x, y, smell, languages, target_language, 
 
         dataset.to_csv(os.path.join(RESULTS_DIR, 'predictions', output_name))
 
+        # Update subplot coordinates
         i = i + 1
 
     plt.savefig(os.path.join(RESULTS_DIR, 'confusion_matrix', 'model_{}_dataset_{}.png'.format(model_name, dataset_id)))
@@ -185,7 +206,7 @@ def perceptron(padding):
     return model
 
 
-def train_all_samples(languages, dataset_name, smell, model_function, model_name):
+def train_all_samples(languages, dataset_name, smell, model_function, model_name, model_n=None):
     for language in languages:
 
         print('training model: {} {} {} {}'.format(language, smell['name'], dataset_name, model_name))
@@ -203,10 +224,6 @@ def train_all_samples(languages, dataset_name, smell, model_function, model_name
         x = dataset.iloc[:, -1]
         y = dataset.iloc[:, -2]
 
-        #         if os.path.exists(os.path.join(MODELS_DIR, '{}_{}_{}_{}'.format(language, model_name, len(x), smell['suffix']))):
-        #             print('model already exists')
-        #             continue
-
         x_train = padding_tokens(x.values, smell['padding_tokens'])
         y_train = y
 
@@ -215,6 +232,10 @@ def train_all_samples(languages, dataset_name, smell, model_function, model_name
         model.fit(x_train, y_train, epochs=100, verbose=0)
 
         model.save(os.path.join(MODELS_DIR, '{}_{}_{}_{}'.format(language, model_name, len(x), smell['suffix'])))
+
+        model_n[smell['name']].update({language: len(x)})
+
+    return model_n
 
 
 def transfer_learning(model_languages, target_language, model_name, model_n_sample):
@@ -262,8 +283,7 @@ def train_n_samples(languages, n_samples, dataset_name, smell, model_function, m
             pos_size = len(pos_smell_df)
             neg_smell_df = dataset.query('smell == 0')
             neg_size = len(neg_smell_df)
-            print(pos_size, neg_size, n)
-            # TODO: Check if it should be n or 2xn here
+
             if pos_size < 2 * n or neg_size < 2 * n:
                 print('Sample size too small, skipping')
                 continue
@@ -328,17 +348,16 @@ def cnn(padding):
 
 # TODO: Code starts here
 # Training Percoptron models
+model_n_dict = {}
 for smell in SMELLS:
-    train_all_samples(LANGUAGES, 'Train_1', smell, perceptron, 'perceptron1')
+    model_n_dict.update({smell['name']: {}})
+    model_n_size = train_all_samples(LANGUAGES, 'Train_1', smell, perceptron, 'perceptron1', model_n_dict)
 
 # Transfer Learning
 results = []
 
 for target_language in LANGUAGES:
-    results.append(transfer_learning(LANGUAGES, target_language, 'perceptron1', 1000))
-
-for target_language in LANGUAGES:
-    results.append(transfer_learning(LANGUAGES, target_language, 'perceptron1', 64))
+    results.append(transfer_learning(LANGUAGES, target_language, 'perceptron1', model_n_size))
 
 # Saving the results of those models when evaluated using Test datasets
 for result in results:
@@ -351,12 +370,10 @@ pd.set_option('display.max_rows', len(dataset) + 1)
 dataset.sort_values(by=['f1'], ascending=True)
 
 # RQ3: Training Perceptron models
-# train_n_samples(['Python'], [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', SMELLS[0], perceptron, 'perceptron1')
 for smell in SMELLS:
     train_n_samples(LANGUAGES, [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', smell, perceptron, 'perceptron1')
 
 # Transfer Learning
-result = transfer_learning_n_samples(['Python'], 'Java', 'Test_1', SMELLS[0], 'perceptron1')
 results = []
 
 for smell in SMELLS:
@@ -368,15 +385,15 @@ for result in results:
     append_data_file(result)
 
 # RQ4: Training CNN models
+model_n_dict = {}
 for smell in SMELLS:
-    train_all_samples(LANGUAGES, 'Train_1', smell, cnn, 'cnn1')
+    model_n_dict.update({smell['name']: {}})
+    train_all_samples(LANGUAGES, 'Train_1', smell, cnn, 'cnn1', model_n_dict)
 
-# train_n_samples(['Python'], [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', SMELLS[0], cnn, 'cnn1')
 for smell in SMELLS:
     train_n_samples(LANGUAGES, [2, 4, 8, 16, 32, 64, 128, 256], 'Train_1', smell, cnn, 'cnn1')
 
 # Transfer Learning
-# result = transfer_learning_n_samples(['Python'], 'Java', 'Test_1', SMELLS[0], 'cnn1')
 results = []
 
 for smell in SMELLS:
@@ -384,6 +401,5 @@ for smell in SMELLS:
         results.append(transfer_learning_n_samples(LANGUAGES, target_language, 'Test_1', smell, 'cnn1'))
 
 # Saving the results of those models when evaluated using Test datasets
-# append_data_file(result)
 for result in results:
     append_data_file(result)
