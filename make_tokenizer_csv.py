@@ -31,6 +31,8 @@ postgreSQL_select_Query = "SELECT * FROM public.class WHERE bug_fix = %s"
 cursor.execute(postgreSQL_select_Query, ('true',))
 cases = cursor.fetchall()
 
+# TODO: Change how files are saved so it saves all samples and sorts the amount only when creating train and test files
+
 try:
 
     with open('csv files\\bug_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
@@ -156,9 +158,9 @@ try:
                     continue
                 writer.writerow({'id': db_id, 'language': db_language, 'text': db_content, 'smells': db_smells, 'project': db_project})
                 count += 1
-                # if count == lang_size:
-                #     print('Amount of cases for ' + language + ' reached, ' + str(count) + ' total cases.')
-                #     break
+                if count == lang_size:
+                    print('Amount of cases for ' + language + ' reached, ' + str(count) + ' total cases.')
+                    break
             else:
                 print('Not enough cases for ' + language + ', there is a total of ' + str(lang_size) +
                       ' cases, but only ' + str(count) + ' total cases correspond to the filter.')
