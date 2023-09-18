@@ -26,16 +26,16 @@ def plot_cf_matrix(max_df, last):
                           sum_stats=False)
 
     if last:
-        plt.title('{}: {} to {}'.format('All Smells', model_language, target_language))
-        plt.savefig(os.path.join('resultados paper', 'gerais', 'model_{}_dataset_{}.png'.format(model, dataset)))
-    else:
-        plt.title('{}: {} to {}'.format(smell_name, model_language, target_language))
-        plt.savefig(os.path.join('resultados paper', 'model_{}_dataset_{}.png'.format(model, dataset)))
+        smell_name = 'All Smells'
+
+    plt.title('{}: {} x {}'.format(smell_name, model_language, target_language))
+    plt.savefig(os.path.join('resultados paper', 'model_{}_dataset_{}.png'.format(model, dataset)))
     plt.close()
 
 
 df = pd.read_csv('data.csv')
-df.drop(df[df.model_language == df.target_language].index, inplace=True)
+df = df[df['model'].str.contains('perceptron1')]
+# df.drop(df[df.model_language == df.target_language].index, inplace=True)
 model_languages = df['model_language'].unique()
 smells = df['smell_name'].unique()
 
@@ -69,14 +69,14 @@ for language in model_languages:
 
             plot_cf_matrix(max_f1, False)
 
-        else:
-            max_f1 = lang_df2[lang_df2['f1'] == lang_df2['f1'].max()]
-            # TODO: fix how data is input into max_f1 dataframe, this only works now because there is only one row
-            max_f1['tn'] = all_tn
-            max_f1['fp'] = all_fp
-            max_f1['fn'] = all_fn
-            max_f1['tp'] = all_tp
-            # TODO: save all data in a dict and do a subplot of the main 6 plots
-            # all_data =
-
-            plot_cf_matrix(max_f1, True)
+        # else:
+        #     max_f1 = lang_df2[lang_df2['f1'] == lang_df2['f1'].max()]
+        #     # TODO: fix how data is input into max_f1 dataframe, this only works now because there is only one row
+        #     max_f1['tn'] = all_tn
+        #     max_f1['fp'] = all_fp
+        #     max_f1['fn'] = all_fn
+        #     max_f1['tp'] = all_tp
+        #     # TODO: save all data in a dict and do a subplot of the main 6 plots
+        #     # all_data =
+        #
+        #     plot_cf_matrix(max_f1, True)
