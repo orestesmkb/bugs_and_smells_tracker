@@ -38,7 +38,7 @@ def create_tmp_file(code_text):
 with open('tokenizer_data.csv', encoding="utf-8", newline='') as csvfile1:
     reader = csv.DictReader(csvfile1)
 
-    with open('tokenized_file.csv', 'w', encoding="utf-8", newline='') as csvfile2:
+    with open('tokenized.csv', 'w', encoding="utf-8", newline='') as csvfile2:
         fieldnames = ['id', 'language', 'text', 'smells', 'tokens']
         writer = csv.DictWriter(csvfile2, fieldnames=fieldnames)
         writer.writeheader()
