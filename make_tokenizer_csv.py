@@ -1,20 +1,10 @@
+from create_folders import create_folders
 import csv
 import psycopg2
 from psycopg2 import Error
-import os
-
-
-def create_folder(folder_path):
-    # This function will check if a folder exists, if it does not it will create one with the path from the input
-    if not os.path.exists(folder_path):
-        os.mkdir(folder_path)
-        print("Folder %s created!" % folder_path)
-    else:
-        print("Folder %s already exists" % folder_path)
-
 
 # check whether directory already exists and if it does not, create it
-create_folder('csv files')
+create_folders('csv files')
 
 # This scrip generates a csv file with all necessary data to generate tokens via tokenizer
 
