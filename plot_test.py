@@ -22,15 +22,16 @@ COMMENTS = [
 ]
 RANDOM_STATE = 33
 LANGUAGES = ['Java', 'C#', 'C++']
+# Rodando Caso B
 SMELLS = [
-    {'name': 'HarmfulCode', 'suffix': 'hm', 'padding_tokens': 28191},
+    {'name': 'BugToSmell', 'suffix': 'bts', 'padding_tokens': 74940},
 ]
 
 # Fifth case, Case B:
-# {'name': 'CaseB', 'suffix': 'cb', 'padding_tokens': 74940},
+# {'name': 'BugToSmell', 'suffix': 'bts', 'padding_tokens': 74940},
 
 # Fourth case, Case A:
-# {'name': 'CaseA', 'suffix': 'ca', 'padding_tokens': 74940},
+# {'name': 'SmellToBug', 'suffix': 'stb', 'padding_tokens': 74940},
 
 # Third case, harmful code vs bug without smells:
 # {'name': 'HarmfulVsBug', 'suffix': 'hb', 'padding_tokens': 28191},
