@@ -285,6 +285,7 @@ for language in languages:
     open_path = harmful_clean_path + '\\all\\' + clean_name + '.csv'
     clean_df = pd.read_csv(open_path)
 
+    # TODO: Turn this into a function
     # Check witch case is smaller and use its length
     if len(harmful_df) < len(clean_df):
         clean_df_harmful_vs_clean = clean_df[clean_df.index < len(harmful_df)]
@@ -293,8 +294,8 @@ for language in languages:
         harmful_df_harmful_vs_clean = harmful_df[harmful_df.index < len(clean_df)]
         clean_df_harmful_vs_clean = clean_df
 
-    train1hc, test1hc = train_test_split(clean_df_harmful_vs_clean, test_size=0.2)
-    train2hc, test2hc = train_test_split(harmful_df_harmful_vs_clean, test_size=0.2)
+    train1_harmful_clean, test1_harmful_clean = train_test_split(clean_df_harmful_vs_clean, test_size=0.2)
+    train2_harmful_clean, test2_harmful_clean = train_test_split(harmful_df_harmful_vs_clean, test_size=0.2)
 
     bug_without_smells_name = language + '_' + 'BugWithoutSmells'
     open_path = harmful_bug_path + '\\all\\' + bug_without_smells_name + '.csv'
@@ -309,72 +310,76 @@ for language in languages:
         harmful_df_harmful_vs_bug = harmful_df[harmful_df.index < len(bug_without_smells_df)]
         bug_without_smells_df_harmful_vs_bug = bug_without_smells_df
 
-    train1hb, test1hb = train_test_split(harmful_df_harmful_vs_bug, test_size=0.2)
-    train2hb, test2hb = train_test_split(bug_without_smells_df_harmful_vs_bug, test_size=0.2)
+    train1_harmful_bug, test1_harmful_bug = train_test_split(harmful_df_harmful_vs_bug, test_size=0.2)
+    train2_harmful_bug, test2_harmful_bug = train_test_split(bug_without_smells_df_harmful_vs_bug, test_size=0.2)
 
+    # TODO: Change how these are saved and loaded, only one time at the start is required
     not_bug_with_smells_name = language + '_' + 'NotBugWithSmells'
     open_path = case_A_path + '\\all\\' + not_bug_with_smells_name + '.csv'
     not_bug_with_smells_df = pd.read_csv(open_path)
 
+    # TODO: Change how these are saved and loaded, only one time at the start is required
     bug_without_smells_name = language + '_' + 'BugWithoutSmells'
     open_path = case_A_path + '\\all\\' + bug_without_smells_name + '.csv'
     bug_without_smells_df = pd.read_csv(open_path)
 
+    # TODO: Turn this into a function, if possible in the same as both above
     # Check witch case is smaller and use its length
     if len(not_bug_with_smells_df) < len(bug_without_smells_df):
-        bug_without_smells_df_case_a = bug_without_smells_df[bug_without_smells_df.index < len(not_bug_with_smells_df)]
-        not_bug_with_smells_df_case_a = not_bug_with_smells_df
-        clean_df_ca = clean_df[clean_df.index < len(not_bug_with_smells_df)]
+        bug_without_smells_df_cases_a_and_b = bug_without_smells_df[bug_without_smells_df.index < len(not_bug_with_smells_df)]
+        not_bug_with_smells_df_cases_a_and_b = not_bug_with_smells_df
+        clean_df_cases_a_and_b = clean_df[clean_df.index < len(not_bug_with_smells_df)]
     else:
-        not_bug_with_smells_df_case_a = not_bug_with_smells_df[not_bug_with_smells_df.index < len(bug_without_smells_df)]
-        bug_without_smells_df_case_a = bug_without_smells_df
-        clean_df_ca = clean_df[clean_df.index < len(bug_without_smells_df)]
+        not_bug_with_smells_df_cases_a_and_b = not_bug_with_smells_df[not_bug_with_smells_df.index < len(bug_without_smells_df)]
+        bug_without_smells_df_cases_a_and_b = bug_without_smells_df
+        clean_df_cases_a_and_b = clean_df[clean_df.index < len(bug_without_smells_df)]
 
-    train1A, test1B = train_test_split(not_bug_with_smells_df_case_a, test_size=0.2)
-    train1B, test1A = train_test_split(bug_without_smells_df_case_a, test_size=0.2)
-    train2B, test2B = train_test_split(clean_df_ca, test_size=0.2)
-    train2A, test2A = train_test_split(clean_df_ca, test_size=0.2)
+    train1_case_a, test1_case_b = train_test_split(not_bug_with_smells_df_cases_a_and_b, test_size=0.2)
+    train1_case_b, test1_case_a = train_test_split(bug_without_smells_df_cases_a_and_b, test_size=0.2)
+    train2_case_b, test2_case_b = train_test_split(clean_df_cases_a_and_b, test_size=0.2)
+    train2_case_a, test2_case_a = train_test_split(clean_df_cases_a_and_b, test_size=0.2)
 
-    concat_trainA = pd.concat([train1A, train2A])
-    concat_testA = pd.concat([test1A, test2A])
+    concat_train_case_a = pd.concat([train1_case_a, train2_case_a])
+    concat_test_case_a = pd.concat([test1_case_a, test2_case_a])
 
     file_name = language + '_' + 'SmellToBug'
     header = ['id', 'language', 'text', 'smell', 'tokens']
     train_path = case_A_path + '\\train\\' + file_name + '_Train_1.csv'
-    concat_trainA.to_csv(train_path, header=header, encoding='utf-8', index=False)
+    concat_train_case_a.to_csv(train_path, header=header, encoding='utf-8', index=False)
     test_path = case_A_path + '\\test\\' + file_name + '_Test_1.csv'
-    concat_testA.to_csv(test_path, header=header, encoding='utf-8', index=False)
+    concat_test_case_a.to_csv(test_path, header=header, encoding='utf-8', index=False)
 
-    concat_trainB = pd.concat([train1B, train2B])
-    concat_testB = pd.concat([test1B, test2B])
+    concat_train_case_b = pd.concat([train1_case_b, train2_case_b])
+    concat_test_case_b = pd.concat([test1_case_b, test2_case_b])
 
     file_name = language + '_' + 'BugToSmell'
     header = ['id', 'language', 'text', 'smell', 'tokens']
     train_path = case_B_path + '\\train\\' + file_name + '_Train_1.csv'
-    concat_trainB.to_csv(train_path, header=header, encoding='utf-8', index=False)
+    concat_train_case_b.to_csv(train_path, header=header, encoding='utf-8', index=False)
     test_path = case_B_path + '\\test\\' + file_name + '_Test_1.csv'
-    concat_testB.to_csv(test_path, header=header, encoding='utf-8', index=False)
+    concat_test_case_b.to_csv(test_path, header=header, encoding='utf-8', index=False)
 
-    concat_train1 = pd.concat([train1hc, train2hc])
-    concat_test1 = pd.concat([test1hc, test2hc])
+    concat_train_harmful_clean = pd.concat([train1_harmful_clean, train2_harmful_clean])
+    concat_test_harmful_clean = pd.concat([test1_harmful_clean, test2_harmful_clean])
 
     file_name = language + '_' + 'HarmfulVsClean'
     header = ['id', 'language', 'text', 'smell', 'tokens']
     train_path = harmful_clean_path + '\\train\\' + file_name + '_Train_1.csv'
-    concat_train1.to_csv(train_path, header=header, encoding='utf-8', index=False)
+    concat_train_harmful_clean.to_csv(train_path, header=header, encoding='utf-8', index=False)
     test_path = harmful_clean_path + '\\test\\' + file_name + '_Test_1.csv'
-    concat_test1.to_csv(test_path, header=header, encoding='utf-8', index=False)
+    concat_test_harmful_clean.to_csv(test_path, header=header, encoding='utf-8', index=False)
 
-    concat_train2 = pd.concat([train1hb, train2hb])
-    concat_test2 = pd.concat([test1hb, test2hb])
+    concat_train_harmful_bug = pd.concat([train1_harmful_bug, train2_harmful_bug])
+    concat_test_harmful_bug = pd.concat([test1_harmful_bug, test2_harmful_bug])
 
     file_name = language + '_' + 'HarmfulVsBug'
     header = ['id', 'language', 'text', 'smell', 'tokens']
     train_path = harmful_bug_path + '\\train\\' + file_name + '_Train_1.csv'
-    concat_train2.to_csv(train_path, header=header, encoding='utf-8', index=False)
+    concat_train_harmful_bug.to_csv(train_path, header=header, encoding='utf-8', index=False)
     test_path = harmful_bug_path + '\\test\\' + file_name + '_Test_1.csv'
-    concat_test2.to_csv(test_path, header=header, encoding='utf-8', index=False)
+    concat_test_harmful_bug.to_csv(test_path, header=header, encoding='utf-8', index=False)
 
+    # For each smell a train and test file is created
     for smell in smells:
         # Get data from csv file
         file_name = language + '_' + smell
