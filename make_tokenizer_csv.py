@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2 import Error
 
 # check whether directory already exists and if it does not, create it
-create_folders('csv files')
+create_folders('csv files', ('tokenizer data', 'tokenized'))
 
 # This scrip generates a csv file with all necessary data to generate tokens via tokenizer
 
@@ -22,7 +22,7 @@ try:
     cursor.execute(postgreSQL_select_Query, ('true',))
     cases = cursor.fetchall()
 
-    with open('csv files\\bug_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
+    with open('csv files\\tokenizer data\\bug_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
         fieldnames = ['id', 'language', 'text', 'smells', 'project']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -44,7 +44,7 @@ try:
             print(' ')
             print('All bug fix cases sorted, ' + str(counter) + ' total cases.')
 
-    with open('csv files\\harmful_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
+    with open('csv files\\tokenizer data\\harmful_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
         fieldnames = ['id', 'language', 'text', 'smells', 'project']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -69,7 +69,7 @@ try:
             print(' ')
             print('All harmful cases sorted, ' + str(counter) + ' total cases.')
 
-    with open('csv files\\bug_without_smells_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
+    with open('csv files\\tokenizer data\\bug_without_smells_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
         fieldnames = ['id', 'language', 'text', 'smells', 'project']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -99,7 +99,7 @@ try:
     cursor.execute(postgreSQL_select_Query, ('false',))
     cases = cursor.fetchall()
 
-    with open('csv files\\clean_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
+    with open('csv files\\tokenizer data\\clean_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
         fieldnames = ['id', 'language', 'text', 'smells', 'project']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -124,7 +124,7 @@ try:
             print(' ')
             print('All clean code cases sorted, ' + str(counter) + ' total cases.')
 
-    with open('csv files\\not_bug_with_smells_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
+    with open('csv files\\tokenizer data\\not_bug_with_smells_tokenizer_data.csv', 'w', encoding="utf-8", newline='') as csvfile:
         fieldnames = ['id', 'language', 'text', 'smells', 'project']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 

@@ -25,7 +25,7 @@ try:
     print(projects2)
     print(' ')
 
-    df = pd.read_csv('bug_tokenizer_data.csv')
+    df = pd.read_csv('csv files\\tokenizer data\\bug_tokenizer_data.csv')
     languages = df['language'].unique()
     print('BUG TOKENIZER DATA CSV:')
     print(df['project'].unique())

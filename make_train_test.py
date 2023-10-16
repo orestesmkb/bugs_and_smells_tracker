@@ -6,8 +6,6 @@ import ast
 import os
 
 # check whether directory already exists and if it does not, create it
-create_folders('csv files')
-
 bug_fix_path = os.path.join('csv files', 'bug fix')
 create_folders(bug_fix_path, ('all', 'train', 'test'))
 
@@ -23,33 +21,34 @@ create_folders(case_A_path, ('all', 'train', 'test'))
 case_B_path = os.path.join('csv files', 'case B - Bug to Smell')
 create_folders(case_B_path, ('all', 'train', 'test'))
 
+# TODO: Get max value from each case to set padding_tokens value in perceptron
 # Get data from csv file
 print(' ')
 print('Largest token size:')
 print(' ')
 
 print('bug fix:')
-df = pd.read_csv(r'csv files\bug_tokenized.csv')
+df = pd.read_csv(r'csv files\tokenized\bug_tokenized.csv')
 split_tokens = df.tokens.str.split(' ')
 print(split_tokens.str.len().max())
 
 print('harmful code:')
-df1 = pd.read_csv(r'csv files\harmful_tokenized.csv')
+df1 = pd.read_csv(r'csv files\tokenized\harmful_tokenized.csv')
 split_tokens = df1.tokens.str.split(' ')
 print(split_tokens.str.len().max())
 
 print('clean code:')
-df2 = pd.read_csv(r'csv files\clean_tokenized.csv')
+df2 = pd.read_csv(r'csv files\tokenized\clean_tokenized.csv')
 split_tokens = df2.tokens.str.split(' ')
 print(split_tokens.str.len().max())
 
 print('bug fix without smells:')
-df3 = pd.read_csv(r'csv files\bug_without_smells_tokenized.csv')
+df3 = pd.read_csv(r'csv files\tokenized\bug_without_smells_tokenized.csv')
 split_tokens = df3.tokens.str.split(' ')
 print(split_tokens.str.len().max())
 
 print('not bug fix with smells:')
-df4 = pd.read_csv(r'csv files\not_bug_with_smells_tokenized.csv')
+df4 = pd.read_csv(r'csv files\tokenized\not_bug_with_smells_tokenized.csv')
 split_tokens = df4.tokens.str.split(' ')
 print(split_tokens.str.len().max())
 print(' ')
